@@ -26,6 +26,18 @@ namespace MediConnect.Controllers
             return View(await context.ToListAsync());
         }
 
+        // GET: Raitings/Rate
+        public IActionResult MessageSend(int? AppointmentID, string? Message)
+        {
+            var _currentUser = _context.Users.First(x => x.Login.Equals(HttpContext.User.Identity.Name));
+            Discussion discussion = new Discussion { AppointmentID = (int)AppointmentID, DoctorID = (int)(_currentUser.ID), Rate = 0, MessageDate = DateTime.Now, Message = Message};
+            _context.Add(discussion);
+            _context.SaveChanges();
+
+            return Redirect("~/Appointments/Details/" + AppointmentID);
+        }
+
+
         // GET: Discussions/Details/5
         public async Task<IActionResult> Details(int? id)
         {
@@ -155,7 +167,7 @@ namespace MediConnect.Controllers
             var discussion = await _context.Discussions.FindAsync(id);
             _context.Discussions.Remove(discussion);
             await _context.SaveChangesAsync();
-            return RedirectToAction(nameof(Index));
+            return Redirect("/Appointments/Details/" + discussion.AppointmentID);
         }
 
         private bool DiscussionExists(int id)

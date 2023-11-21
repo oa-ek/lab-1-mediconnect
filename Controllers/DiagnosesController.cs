@@ -22,8 +22,8 @@ namespace MediConnect.Controllers
         // GET: Diagnoses
         public async Task<IActionResult> Index()
         {
-            var context = _context.Diagnoses.Include(d => d.Appointment).Include(d => d.Result);
-            return View(await context.ToListAsync());
+            var clinicContext = _context.Diagnoses.Include(d => d.Appointment).Include(d => d.Result);
+            return View(await clinicContext.ToListAsync());
         }
 
         // GET: Diagnoses/Details/5
@@ -47,10 +47,10 @@ namespace MediConnect.Controllers
         }
 
         // GET: Diagnoses/Create
-        public IActionResult Create()
+        public IActionResult Create(int? id)
         {
-            ViewData["AppointmentID"] = new SelectList(_context.Appointments, "ID", "ID");
-            ViewData["ResultID"] = new SelectList(_context.Results, "ID", "ID");
+            ViewData["AppointmentID"] = new SelectList(_context.Appointments, "ID", "ID", id);
+            ViewData["ResultID"] = new SelectList(_context.Results, "ID", "Name");
             return View();
         }
 
@@ -61,15 +61,16 @@ namespace MediConnect.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create([Bind("ID,ResultID,Description,Date,AppointmentID")] Diagnosis diagnosis)
         {
-            if (ModelState.IsValid)
-            {
-                _context.Add(diagnosis);
-                await _context.SaveChangesAsync();
-                return RedirectToAction(nameof(Index));
+            Diagnosis temp = new Diagnosis { ResultID = diagnosis.ResultID, Description = diagnosis.Description, Date = DateTime.Now, AppointmentID = diagnosis.AppointmentID };
+            _context.Add(temp);
+            await _context.SaveChangesAsync();
+
+            if(_context.Results.First(x =>x.ID == diagnosis.ResultID).Name.Equals("ПОТРЕБУЄ ПОВТОРНОГО ОБСТЕЖЕННЯ"))
+            { 
+                return Redirect("/Appointments/Create/"+ _context.Appointments.First(x => x.ID == diagnosis.AppointmentID).ClientID);
             }
-            ViewData["AppointmentID"] = new SelectList(_context.Appointments, "ID", "ID", diagnosis.AppointmentID);
-            ViewData["ResultID"] = new SelectList(_context.Results, "ID", "ID", diagnosis.ResultID);
-            return View(diagnosis);
+            else
+                return Redirect("/");
         }
 
         // GET: Diagnoses/Edit/5

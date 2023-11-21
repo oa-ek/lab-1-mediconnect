@@ -1,0 +1,140 @@
+﻿@model MediConnect.Models.RegisterModel
+
+@{
+    ViewData["Title"] = "Sign Up";
+    Layout = null;
+}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - MediConnect</title>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/css/site.css" />
+</head>
+<body>
+    <header>
+        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
+            <div class="container">
+                <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">MediConnect</a>
+                <button class="navbar-toggler" type="button" data-toggle="collapse" data-target=".navbar-collapse" aria-controls="navbarSupportedContent"
+                        aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
+                    <ul class="navbar-nav flex-grow-1">
+                        @if(User.Identity.IsAuthenticated)
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Index">Home</a>
+                            </li>
+                            if(User.IsInRole("Admin"))
+                            {
+                                
+                            }
+
+                            if(User.IsInRole("Patient"))
+                            {
+                                
+                            }
+                            <li>
+                                <a class="nav-link text-dark" asp-area="" asp-controller="People" asp-action="Details">Profile</a>
+                            </li>
+                            <li>
+                                <a class="nav-link text-dark" asp-area="" asp-controller="Account" asp-action="Logout">Sign Out</a>
+                            </li>
+                        }
+                        else
+                        {
+                            <ul class="navbar-nav flex-grow-1">
+                                <li class="nav-item">
+                                    <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Index">Home</a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link text-dark" asp-area="" asp-controller="Users" asp-action="Doctors">Doctors</a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link text-dark" asp-area="" asp-controller="Account" asp-action="Login">Sign In</a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link text-dark" asp-area="" asp-controller="Account" asp-action="Register">Sign Up</a>
+                                </li>
+                            </ul>
+                        }
+                    </ul>
+                </div>
+            </div>
+        </nav>
+    </header>
+    <div class="container">
+        <main role="main" class="pb-3">
+            <h1>Sign Up</h1>
+            <hr />
+            <div class="row">
+                <div class="col-md-4">
+                    <form asp-action="Register" asp-controller="Account" asp-anti-forgery="true">
+                        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                        <div class="form-group">
+                            <label asp-for="FirstName" class="control-label">First Name</label>
+                            <input asp-for="FirstName" class="form-control" />
+                            <span asp-validation-for="FirstName" class="text-danger"></span>
+                        </div>
+                        <div class="form-group">
+                            <label asp-for="SecondName" class="control-label">Second Name</label>
+                            <input asp-for="SecondName" class="form-control" />
+                            <span asp-validation-for="SecondName" class="text-danger"></span>
+                        </div>
+                        <div class="form-group">
+                            <label asp-for="LastName" class="control-label">Last Name</label>
+                            <input asp-for="LastName" class="form-control" />
+                            <span asp-validation-for="LastName" class="text-danger"></span>
+                        </div>
+                        <div class="form-group">
+                            <label asp-for="Phone" class="control-label">Phone</label>
+                            <input asp-for="Phone" class="form-control" />
+                            <span asp-validation-for="Phone" class="text-danger"></span>
+                        </div>
+                        <div class="form-group">
+                            <label asp-for="GenderID" class="control-label">Gender</label>
+                            <select asp-for="GenderID" class="form-control" asp-items="ViewBag.Genders"></select>
+                        </div>                
+                        <div class="form-group">
+                            <label asp-for="BirthDate" class="control-label">Birth Date</label>
+                            <input asp-for="BirthDate" class="form-control" />
+                            <span asp-validation-for="BirthDate" class="text-danger"></span>
+                        </div>
+                        <div class="form-group">
+                            <label asp-for="Login" class="control-label">Login</label><br />
+                            <input type="text" asp-for="Login" class="form-control" />
+                            <span asp-validation-for="Login" class="text-danger" />
+                        </div>
+                        <div class="form-group">
+                            <label asp-for="Password" class="control-label">Password</label><br />
+                            <input asp-for="Password" class="form-control" />
+                            <span asp-validation-for="Password" class="text-danger" />
+                        </div>
+                        <div class="form-group">
+                            <label asp-for="ConfirmPassword" class="control-label">Repeat password</label><br />
+                            <input asp-for="ConfirmPassword" class="form-control" />
+                            <span asp-validation-for="ConfirmPassword" class="text-danger" />
+                        </div>
+                        <div asp-validation-summary="ModelOnly" class="text-danger"></div>     
+                        <div class="form-group">
+                            <input type="submit" value="Register" class="btn btn-primary" />
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </main>
+    </div>
+
+     <footer class="border-top footer text-muted">
+        <div class="container">
+        </div>
+    </footer>
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/js/site.js" asp-append-version="true"></script>
+</body>
+</html>

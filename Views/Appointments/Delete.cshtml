@@ -12,25 +12,25 @@
     <hr />
     <dl class="row">
         <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Client)
+            Patient
         </dt>
         <dd class = "col-sm-10">
             @Html.DisplayFor(model => model.Client.ID)
         </dd class>
         <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Doctor)
+            Doctor
         </dt>
         <dd class = "col-sm-10">
             @Html.DisplayFor(model => model.Doctor.ID)
         </dd class>
         <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.StartDate)
+            Appointment start date
         </dt>
         <dd class = "col-sm-10">
             @Html.DisplayFor(model => model.StartDate)
         </dd>
         <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.EndDate)
+            Appointment end date
         </dt>
         <dd class = "col-sm-10">
             @Html.DisplayFor(model => model.EndDate)
@@ -40,6 +40,6 @@
     <form asp-action="Delete">
         <input type="hidden" asp-for="ID" />
         <input type="submit" value="Delete" class="btn btn-danger" /> |
-        <a asp-action="Index">Back to List</a>
+        
     </form>
 </div>

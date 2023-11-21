@@ -22,8 +22,11 @@ namespace MediConnect.Controllers
         // GET: Appointments
         public async Task<IActionResult> Index()
         {
-            var context = _context.Appointments.Include(a => a.Client).Include(a => a.Doctor);
-            return View(await context.ToListAsync());
+            DateTime dateTime = DateTime.Parse("01.01.0001 0:00:00");
+            ViewBag.End = dateTime;
+            var currentUser = _context.Users.Include(x => x.Role).First(x => x.Login.Equals(HttpContext.User.Identity.Name));
+            var clinicContext = _context.Appointments.Include(a => a.Client).Include(a => a.Doctor).Where(x=>x.Doctor.ID == currentUser.ID).OrderByDescending(x=>x.StartDate);
+            return View(await clinicContext.ToListAsync());
         }
 
         // GET: Appointments/Details/5
@@ -34,10 +37,28 @@ namespace MediConnect.Controllers
                 return NotFound();
             }
 
+            DateTime dateTime = DateTime.Parse("01.01.0001 0:00:00");
+            ViewBag.End = dateTime;
+
             var appointment = await _context.Appointments
                 .Include(a => a.Client)
                 .Include(a => a.Doctor)
+                .Include(a => a.Diagnosises)
+                .Include(a => a.Discussions)
                 .FirstOrDefaultAsync(m => m.ID == id);
+
+            List<Diagnosis> list = new List<Diagnosis>();
+
+            foreach(Diagnosis diagnosis in appointment.Diagnosises)
+            {
+                list.Add(_context.Diagnoses.Include(x=>x.Result).First(x => x.ID == diagnosis.ID));
+            }
+
+            appointment.Diagnosises = list;
+
+            ViewBag.Discussions = _context.Discussions.Include(x=>x.Doctor).Where(x => x.AppointmentID == id);
+
+
             if (appointment == null)
             {
                 return NotFound();
@@ -46,11 +67,34 @@ namespace MediConnect.Controllers
             return View(appointment);
         }
 
-        // GET: Appointments/Create
-        public IActionResult Create()
+        // GET: Appointments/Finish
+        public IActionResult Finish(int? id)
         {
-            ViewData["ClientID"] = new SelectList(_context.Users, "ID", "ID");
-            ViewData["DoctorID"] = new SelectList(_context.Users, "ID", "ID");
+            var appointment = _context.Appointments.First(x => x.ID == id);
+            appointment.EndDate = DateTime.Now;
+            _context.Update(appointment);
+            _context.SaveChanges();
+            return Redirect("/Diagnoses/Create/"+id);
+        }
+
+        // GET: Appointments/Create
+        public IActionResult Create(int? id) 
+        {
+            if(id == null)
+            {
+                ViewBag.My = true;
+                var currentUser = _context.Users.Include(x => x.Role).First(x => x.Login.Equals(HttpContext.User.Identity.Name));
+                ViewData["ClientID"] = new SelectList(_context.Users.Include(x => x.Role).Where(x => x.Role.Name.Equals("Patient")), "ID", "FullName",currentUser.ID);
+            }
+            else
+            {
+                ViewData["ClientID"] = new SelectList(_context.Users.Include(x => x.Role).Where(x => x.Role.Name.Equals("Patient")), "ID", "FullName",id);
+            }
+            var doctor = _context.Users.Include(x => x.Role).First(x => x.Login.Equals(HttpContext.User.Identity.Name));
+            if(!doctor.Role.Name.Equals("Patient") || !doctor.Role.Name.Equals("Admin") || !doctor.Role.Name.Equals("Clinic Manager"))
+                ViewData["DoctorID"] = new SelectList(_context.Users.Include(x=>x.Role).Where(x=>!x.Role.Name.Equals("Patient")), "ID", "FullName", doctor.ID);
+            else
+                ViewData["DoctorID"] = new SelectList(_context.Users.Include(x => x.Role).Where(x => !x.Role.Name.Equals("Patient")), "ID", "FullName");
             return View();
         }
 
@@ -59,17 +103,12 @@ namespace MediConnect.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("ID,ClientID,DoctorID,StartDate,EndDate")] Appointment appointment)
+        public async Task<IActionResult> Create([Bind("ID,ClientID,DoctorID,StartDate")] Appointment appointment)
         {
-            if (ModelState.IsValid)
-            {
-                _context.Add(appointment);
-                await _context.SaveChangesAsync();
-                return RedirectToAction(nameof(Index));
-            }
-            ViewData["ClientID"] = new SelectList(_context.Users, "ID", "ID", appointment.ClientID);
-            ViewData["DoctorID"] = new SelectList(_context.Users, "ID", "ID", appointment.DoctorID);
-            return View(appointment);
+            Appointment appointment1 = new Appointment { ClientID = appointment.ClientID, DoctorID = appointment.DoctorID, StartDate = appointment.StartDate };
+            _context.Add(appointment1);
+            await _context.SaveChangesAsync();
+            return Redirect("/");
         }
 
         // GET: Appointments/Edit/5
