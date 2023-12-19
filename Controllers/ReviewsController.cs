@@ -26,6 +26,19 @@ namespace MediConnect.Controllers
             return View(await context.ToListAsync());
         }
 
+
+        // GET: Raitings/Rate
+        public IActionResult Rate(int? DoctorID, int? Value, string? Description)
+        {
+            var _currentUser = _context.Users.First(x => x.Login.Equals(HttpContext.User.Identity.Name));
+            Review review = new Review{ ClientID = _currentUser.ID, DoctorID = (int)(DoctorID), Rate = (int)Value , Description = Description, ReviewDate = DateTime.Now};
+            _context.Add(review);
+            _context.SaveChanges();
+
+            return Redirect("~/Users/Details/" + DoctorID);
+        }
+
+
         // GET: Reviews/Details/5
         public async Task<IActionResult> Details(int? id)
         {
@@ -155,7 +168,7 @@ namespace MediConnect.Controllers
             var review = await _context.Reviews.FindAsync(id);
             _context.Reviews.Remove(review);
             await _context.SaveChangesAsync();
-            return RedirectToAction(nameof(Index));
+            return Redirect("/Users/Details/" + review.DoctorID);
         }
 
         private bool ReviewExists(int id)

@@ -4,49 +4,57 @@
     ViewData["Title"] = "Index";
 }
 
-<h1>Index</h1>
-
-<p>
-    <a asp-action="Create">Create New</a>
-</p>
-<table class="table">
-    <thead>
+<table class="table table-striped">
+    <thead class="thead-dark">
         <tr>
             <th>
-                @Html.DisplayNameFor(model => model.Client)
+                Patient
             </th>
             <th>
-                @Html.DisplayNameFor(model => model.Doctor)
+                Doctor
             </th>
             <th>
-                @Html.DisplayNameFor(model => model.StartDate)
+                Date and time appointment
             </th>
             <th>
-                @Html.DisplayNameFor(model => model.EndDate)
+                Date and time finish appointment
             </th>
-            <th></th>
+            @if (!User.IsInRole("Admin") && !User.IsInRole("Patient") && !User.IsInRole("Clinic Manager"))
+            {
+                <th></th>
+            }
         </tr>
     </thead>
     <tbody>
 @foreach (var item in Model) {
         <tr>
             <td>
-                @Html.DisplayFor(modelItem => item.Client.ID)
+                @Html.DisplayFor(modelItem => item.Client.FullName)
             </td>
             <td>
-                @Html.DisplayFor(modelItem => item.Doctor.ID)
+                @Html.DisplayFor(modelItem => item.Doctor.FullName)
             </td>
             <td>
                 @Html.DisplayFor(modelItem => item.StartDate)
             </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.EndDate)
-            </td>
-            <td>
-                <a asp-action="Edit" asp-route-id="@item.ID">Edit</a> |
-                <a asp-action="Details" asp-route-id="@item.ID">Details</a> |
-                <a asp-action="Delete" asp-route-id="@item.ID">Delete</a>
-            </td>
+            @if(item.EndDate != ViewBag.End)
+            {
+                <td>
+                    @Html.DisplayFor(modelItem => item.EndDate)
+                </td>
+            }
+            else
+            {
+                <td>
+                    Still active
+                </td>        
+            }
+            @if (!User.IsInRole("Admin") && !User.IsInRole("Patient") && !User.IsInRole("Clinic Manager"))
+            {
+                <td>
+                    <a asp-action="Details" asp-route-id="@item.ID">Details</a>
+                </td>
+            }
         </tr>
 }
     </tbody>

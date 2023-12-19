@@ -7,72 +7,218 @@
 <h1>Details</h1>
 
 <div>
-    <h4>User</h4>
     <hr />
     <dl class="row">
         <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Avatar)
         </dt>
         <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Avatar)
+            <img src="@Model.Avatar" alt="avatar" width="150px;"/>
         </dd>
         <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Login)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Login)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Password)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Password)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.FirstName)
+            First Name
         </dt>
         <dd class = "col-sm-10">
             @Html.DisplayFor(model => model.FirstName)
         </dd>
         <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.SecondName)
+            Second Name
         </dt>
         <dd class = "col-sm-10">
             @Html.DisplayFor(model => model.SecondName)
         </dd>
         <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.LastName)
+            Last Name
         </dt>
         <dd class = "col-sm-10">
             @Html.DisplayFor(model => model.LastName)
         </dd>
         <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.BitrhDate)
+            Birth Date
         </dt>
         <dd class = "col-sm-10">
             @Html.DisplayFor(model => model.BitrhDate)
         </dd>
         <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Phone)
+            Phone
         </dt>
         <dd class = "col-sm-10">
             @Html.DisplayFor(model => model.Phone)
         </dd>
         <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Gender)
+            Gender
         </dt>
         <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Gender.ID)
+            @Html.DisplayFor(model => model.Gender.Name)
         </dd>
         <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Role)
+            Role
         </dt>
         <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Role.ID)
+            @Html.DisplayFor(model => model.Role.Name)
         </dd>
     </dl>
 </div>
+
+<hr />
+
 <div>
-    <a asp-action="Edit" asp-route-id="@Model.ID">Edit</a> |
-    <a asp-action="Index">Back to List</a>
+    @if(User.IsInRole("Admin") || User.IsInRole("Clinic Manager") || User.IsInRole("Patient") || ViewBag.My)
+    { 
+        <a asp-action="Edit" asp-route-id="@Model.ID">Edit</a> 
+    }
 </div>
+
+
+@if (Model.Role.Name.Equals("Doctor") || Model.Role.Name.Equals("Patient"))
+{
+<hr />
+
+<h2>Appointments</h2>
+<table class="table table-striped">
+    <thead class="thead-dark">
+        <tr>
+            <th>
+                Patient
+            </th>
+            <th>
+                Doctor
+            </th>
+            <th>
+                Date and time appointment
+            </th>
+            <th>
+                Date and time finish appointment
+            </th>
+            @if (!User.IsInRole("Admin") && !User.IsInRole("Patient") && !User.IsInRole("Clinic Manager"))
+            {
+                <th></th>
+            }
+        </tr>
+    </thead>
+    <tbody>
+@foreach (var item in ViewBag.Appointments) {
+        <tr>
+            <td>
+                @Html.Raw(item.Client.FullName)
+            </td>
+            <td>
+                @Html.Raw(item.Doctor.FullName)
+            </td>
+            <td>
+                @Html.Raw(item.StartDate)
+            </td>
+            @if(item.EndDate != ViewBag.End)
+            {
+                <td>
+                    @Html.Raw(item.EndDate)
+                </td>
+            }
+            else
+            {
+                <td>
+                    Still active
+                </td>        
+            }
+            @if (!User.IsInRole("Admin") && !User.IsInRole("Patient") && !User.IsInRole("Clinic Manager"))
+            {
+                <td>
+                    <a asp-controller="Appointments" asp-action="Details" asp-route-id="@item.ID">Details</a>
+                </td>
+            }
+        </tr>
+}
+    </tbody>
+</table>
+}
+
+@if (Model.Role.Name.Equals("Doctor"))
+{
+    <hr />
+
+    <h2>Reviews</h2>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>
+                    Patient
+                </th>
+                <th>
+                    Rate
+                </th>
+                <th>
+                    Rewiew Date
+                </th>
+                <th>
+                    Description
+                </th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in ViewBag.Reviews)
+            {
+                <tr>
+                    <td>
+                        @Html.Raw(item.Client.FullName)
+                    </td>
+                    <td>
+                        @Html.Raw(item.Rate)
+                    </td>
+                    <td>
+                        @Html.Raw(item.ReviewDate)
+                    </td>
+                    <td>
+                        @Html.Raw(item.Description)
+                    </td>
+                    <td>
+                        @if (User.Identity.IsAuthenticated)
+                        {
+                            if (User.IsInRole("Moderator"))
+                            {
+                                <a asp-controller="Reviews" asp-action="Delete" asp-route-id="@item.ID">Delete</a>
+                            }
+                        }
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+
+    <hr />
+
+    @if (User.Identity.IsAuthenticated)
+    {
+        if (User.IsInRole("Patient"))
+        {
+            <h4>Add review</h4>
+            <hr />
+            <div class="row">
+                <div class="col-md-4">
+                    <form asp-controller="Reviews" asp-action="Rate">
+                        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                        <div class="form-group" hidden>
+                            <input type="number" name="DoctorID" class="form-control" asp-items="ViewBag.DoctorID" value="@Model.ID"/>
+                        </div>
+                        <div class="form-group">
+                            <label class="control-label">Rate</label>
+                            <select name="Value" class="form-control" required>
+                                <option>1</option>
+                                <option>2</option>
+                                <option>3</option>
+                                <option>4</option>
+                                <option>5</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="control-label">Description</label>
+                            <input name="Description" class="form-control" />
+                        </div>
+                        <div class="form-group">
+                            <input type="submit" value="Add rewview" class="btn btn-primary" />
+                        </div>
+                    </form>
+                </div>
+            </div>
+        }
+    }
+}

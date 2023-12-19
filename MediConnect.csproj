@@ -18,4 +18,32 @@
     <Folder Include="wwwroot\img\carusel\" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Include="Views\Appointments\Create.cshtml" />
+    <None Include="Views\Appointments\Delete.cshtml" />
+    <None Include="Views\Appointments\Details.cshtml" />
+    <None Include="Views\Appointments\Edit.cshtml" />
+    <None Include="Views\Appointments\Index.cshtml" />
+    <None Include="Views\Diagnoses\Create.cshtml" />
+    <None Include="Views\Diagnoses\Delete.cshtml" />
+    <None Include="Views\Diagnoses\Details.cshtml" />
+    <None Include="Views\Diagnoses\Edit.cshtml" />
+    <None Include="Views\Diagnoses\Index.cshtml" />
+    <None Include="Views\Home\Index.cshtml" />
+    <None Include="Views\Home\Privacy.cshtml" />
+    <None Include="Views\Roles\Create.cshtml" />
+    <None Include="Views\Roles\Delete.cshtml" />
+    <None Include="Views\Roles\Details.cshtml" />
+    <None Include="Views\Roles\Edit.cshtml" />
+    <None Include="Views\Roles\Index.cshtml" />
+    <None Include="Views\Shared\Error.cshtml" />
+    <None Include="Views\Shared\_Layout.cshtml" />
+    <None Include="Views\Shared\_ValidationScriptsPartial.cshtml" />
+    <None Include="Views\Users\Create.cshtml" />
+    <None Include="Views\Users\Delete.cshtml" />
+    <None Include="Views\Users\Details.cshtml" />
+    <None Include="Views\Users\Edit.cshtml" />
+    <None Include="Views\Users\Index.cshtml" />
+  </ItemGroup>
+
 </Project>
