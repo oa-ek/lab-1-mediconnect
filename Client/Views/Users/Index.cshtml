@@ -1,0 +1,86 @@
+﻿@model IEnumerable<Shared.Models.User>
+
+@{
+    ViewData["Title"] = "Index";
+}
+@if (User.IsInRole("Admin"))
+{
+    <p>
+        <a asp-action="Create">Add new employee</a>
+    </p>
+}
+@if (User.IsInRole("Clinic Manager"))
+{
+    <p>
+        <a asp-controller="Account" asp-action="Register">Create new patient</a>
+    </p>
+}
+
+<table class="table table-striped">
+    <thead class="thead-dark">
+        <tr>
+            <th>
+                Avatar
+            </th>
+            <th>
+                Full Name
+            </th>
+            <th>
+                Birth Date
+            </th>
+            <th>
+                Phone
+            </th>
+            <th>
+                Gender
+            </th>
+            <th>
+                Role
+            </th>
+            @if(User.IsInRole("Admin") || User.IsInRole("Clinic Manager"))
+            {
+                <th></th>    
+            }
+            @if (User.IsInRole("Clinic Manager"))
+            {
+                <th></th>
+            }
+        </tr>
+    </thead>
+    <tbody>
+@foreach (var item in Model) {
+        <tr>
+            <td>
+                <img src="@item.Avatar" alt="avatar" width="150px;"/>
+            </td>
+            <td>
+                <a asp-action="Details" asp-route-id="@item.ID">@Html.DisplayFor(modelItem => item.FullName)</a>
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.BitrhDate)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Phone)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Gender.Name)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Role.Name)
+            </td>
+            @if(User.IsInRole("Admin") || User.IsInRole("Clinic Manager"))
+            { 
+                <td>
+                    <a asp-action="Edit" asp-route-id="@item.ID">Edit</a>
+                </td>
+            }
+            @if (User.IsInRole("Clinic Manager"))
+            {
+                <td>
+                    <a asp-area="" asp-controller="Appointments" asp-action="Create" asp-route-id="@item.ID">Make an appointment</a>
+                </td>    
+            }
+            </tr>
+        }
+    </tbody>
+</table>

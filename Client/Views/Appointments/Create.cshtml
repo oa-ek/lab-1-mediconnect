@@ -1,0 +1,37 @@
+﻿@model Shared.Models.Appointment
+
+@{
+    ViewData["Title"] = "Create";
+}
+
+<h4>Новий прийом до Doctorя</h4>
+<hr />
+<div class="row">
+    <div class="col-md-4">
+        <form asp-action="Create">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <div class="form-group" hidden>
+                <label asp-for="ClientID" class="control-label">Patient</label>
+                <select asp-for="ClientID" class ="form-control" asp-items="ViewBag.ClientID"></select>
+            </div>
+            <div class="form-group">
+                <label asp-for="DoctorID" class="control-label">Doctor</label>
+                <select asp-for="DoctorID" class ="form-control" asp-items="ViewBag.DoctorID"></select>
+            </div>
+            <div class="form-group">
+                <label asp-for="StartDate" class="control-label">Appointment date and time</label>
+                <input asp-for="StartDate" class="form-control" />
+                <span asp-validation-for="StartDate" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <input type="submit" value="Make an appointment" class="btn btn-primary" />
+            </div>
+        </form>
+    </div>
+</div>
+<div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}
