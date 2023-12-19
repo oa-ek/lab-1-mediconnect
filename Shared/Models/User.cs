@@ -15,7 +15,7 @@ namespace Shared.Models
         public string FirstName { get; set; }
         public string SecondName { get; set; }
         public string LastName { get; set; }
-        public DateTime BitrhDate { get; set; }
+        public DateTime BirthDate { get; set; }
         public string Phone { get; set; }
         public int GenderID { get; set; }
         public Gender Gender { get; set; }
