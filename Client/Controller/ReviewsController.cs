@@ -42,15 +42,14 @@ namespace Client.Controllers
 
         public IActionResult Create()
         {
-            ViewData["ClientId"] = new SelectList(_context.Users, "Id", "Id");
-            ViewData["DoctorId"] = new SelectList(_context.Users, "Id", "Id");
+            ViewData["DoctorId"] = new SelectList(_context.Users, "Id", "FullName");
             return View();
         }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(
-            [Bind("Id,ClientId,DoctorId,Rate,ReviewDate,Description")]
+            [Bind("Id,DoctorId,Rate,Description")]
             Review review)
         {
             var currentUser = await _context.Users.FirstOrDefaultAsync(x => x.Login == User.Identity!.Name);

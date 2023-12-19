@@ -117,7 +117,7 @@ namespace Server.Controllers
         public async Task<IActionResult> Create([Bind("Id,ClientId,DoctorId,StartDate")] Appointment appointment)
         {
             var appointment1 = new Appointment
-                { ClientId = appointment.ClientId, DoctorId = appointment.DoctorId, StartDate = appointment.StartDate };
+            { ClientId = appointment.ClientId, DoctorId = appointment.DoctorId, StartDate = appointment.StartDate };
 
             _context.Add(appointment1);
             await _context.SaveChangesAsync();
