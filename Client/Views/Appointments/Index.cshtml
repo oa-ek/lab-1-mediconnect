@@ -52,7 +52,7 @@
             @if (!User.IsInRole("Admin") && !User.IsInRole("Patient") && !User.IsInRole("Clinic Manager"))
             {
                 <td>
-                    <a asp-action="Details" asp-route-id="@item.ID">Details</a>
+                    <a asp-action="Details" asp-route-id="@item.Id">Details</a>
                 </td>
             }
         </tr>

@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using Server.Data;
@@ -19,17 +15,15 @@ namespace Client.Controllers
             _context = context;
         }
 
-        // GET: Reviews
         public async Task<IActionResult> Index()
         {
             var context = _context.Reviews.Include(r => r.Client).Include(r => r.Doctor);
             return View(await context.ToListAsync());
         }
 
-        // GET: Reviews/Details/5
-        public async Task<IActionResult> Details(string? description)
+        public async Task<IActionResult> Details(int? id)
         {
-            if (description == null)
+            if (id == null)
             {
                 return NotFound();
             }
@@ -37,7 +31,7 @@ namespace Client.Controllers
             var review = await _context.Reviews
                 .Include(r => r.Client)
                 .Include(r => r.Doctor)
-                .FirstOrDefaultAsync(m => m.Description == description);
+                .FirstOrDefaultAsync(m => m.Id == id);
             if (review == null)
             {
                 return NotFound();
@@ -46,33 +40,35 @@ namespace Client.Controllers
             return View(review);
         }
 
-        // GET: Reviews/Create
         public IActionResult Create()
         {
-            ViewData["ClientID"] = new SelectList(_context.Users, "ID", "ID");
-            ViewData["DoctorID"] = new SelectList(_context.Users, "ID", "ID");
+            ViewData["ClientId"] = new SelectList(_context.Users, "Id", "Id");
+            ViewData["DoctorId"] = new SelectList(_context.Users, "Id", "Id");
             return View();
         }
 
-        // POST: Reviews/Create
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("ID,ClientID,DoctorID,Rate,ReviewDate,Description")] Review review)
+        public async Task<IActionResult> Create(
+            [Bind("Id,ClientId,DoctorId,Rate,ReviewDate,Description")]
+            Review review)
         {
-            if (ModelState.IsValid)
-            {
-                _context.Add(review);
-                await _context.SaveChangesAsync();
+            var currentUser = await _context.Users.FirstOrDefaultAsync(x => x.Login == User.Identity!.Name);
+            review.ClientId = currentUser!.Id;
+            review.ReviewDate = DateTime.Now;
+
+            _context.Add(review);
+
+            var result = await _context.SaveChangesAsync() > 0;
+
+            if (result)
                 return RedirectToAction(nameof(Index));
-            }
-            ViewData["ClientID"] = new SelectList(_context.Users, "ID", "ID", review.ClientID);
-            ViewData["DoctorID"] = new SelectList(_context.Users, "ID", "ID", review.DoctorID);
+
+            ViewData["ClientId"] = new SelectList(_context.Users, "Id", "Id", review.ClientId);
+            ViewData["DoctorId"] = new SelectList(_context.Users, "Id", "Id", review.DoctorId);
             return View(review);
         }
 
-        // GET: Reviews/Edit/5
         public async Task<IActionResult> Edit(int? id)
         {
             if (id == null)
@@ -85,52 +81,33 @@ namespace Client.Controllers
             {
                 return NotFound();
             }
-            ViewData["ClientID"] = new SelectList(_context.Users, "ID", "ID", review.ClientID);
-            ViewData["DoctorID"] = new SelectList(_context.Users, "ID", "ID", review.DoctorID);
+
+            ViewData["ClientId"] = new SelectList(_context.Users, "Id", "Id", review.ClientId);
+            ViewData["DoctorId"] = new SelectList(_context.Users, "Id", "Id", review.DoctorId);
             return View(review);
         }
 
-        // POST: Reviews/Edit/5
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("ID,ClientID,DoctorID,Rate,ReviewDate,Description")] Review review)
+        public async Task<IActionResult> Edit(int id,
+            [Bind("Id,ClientId,DoctorId,Rate,ReviewDate,Description")]
+            Review review)
         {
-            if (id != review.ID)
+            if (id != review.Id)
             {
                 return NotFound();
             }
 
-            if (ModelState.IsValid)
-            {
-                try
-                {
-                    _context.Update(review);
-                    await _context.SaveChangesAsync();
-                }
-                catch (DbUpdateConcurrencyException)
-                {
-                    if (!ReviewExists(review.ID))
-                    {
-                        return NotFound();
-                    }
-                    else
-                    {
-                        throw;
-                    }
-                }
-                return RedirectToAction(nameof(Index));
-            }
-            ViewData["ClientID"] = new SelectList(_context.Users, "ID", "ID", review.ClientID);
-            ViewData["DoctorID"] = new SelectList(_context.Users, "ID", "ID", review.DoctorID);
-            return View(review);
+
+            _context.Update(review);
+            await _context.SaveChangesAsync();
+
+            return RedirectToAction(nameof(Index));
         }
 
-        // GET: Reviews/Delete/5
-        public async Task<IActionResult> Delete(string? description)
+        public async Task<IActionResult> Delete(int? id)
         {
-            if (description == null)
+            if (id == null)
             {
                 return NotFound();
             }
@@ -138,7 +115,8 @@ namespace Client.Controllers
             var review = await _context.Reviews
                 .Include(r => r.Client)
                 .Include(r => r.Doctor)
-                .FirstOrDefaultAsync(m => m.Description == description);
+                .FirstOrDefaultAsync(m => m.Id == id);
+
             if (review == null)
             {
                 return NotFound();
@@ -147,7 +125,6 @@ namespace Client.Controllers
             return View(review);
         }
 
-        // POST: Reviews/Delete/5
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(string description)
@@ -160,7 +137,7 @@ namespace Client.Controllers
 
         private bool ReviewExists(int id)
         {
-            return _context.Reviews.Any(e => e.ID == id);
+            return _context.Reviews.Any(e => e.Id == id);
         }
     }
 }

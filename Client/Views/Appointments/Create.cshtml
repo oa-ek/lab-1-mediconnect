@@ -11,12 +11,12 @@
         <form asp-action="Create">
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
             <div class="form-group" hidden>
-                <label asp-for="ClientID" class="control-label">Patient</label>
-                <select asp-for="ClientID" class ="form-control" asp-items="ViewBag.ClientID"></select>
+                <label asp-for="ClientId" class="control-label">Patient</label>
+                <select asp-for="ClientId" class ="form-control" asp-items="ViewBag.ClientId"></select>
             </div>
             <div class="form-group">
-                <label asp-for="DoctorID" class="control-label">Doctor</label>
-                <select asp-for="DoctorID" class ="form-control" asp-items="ViewBag.DoctorID"></select>
+                <label asp-for="DoctorId" class="control-label">Doctor</label>
+                <select asp-for="DoctorId" class ="form-control" asp-items="ViewBag.DoctorId"></select>
             </div>
             <div class="form-group">
                 <label asp-for="StartDate" class="control-label">Appointment date and time</label>

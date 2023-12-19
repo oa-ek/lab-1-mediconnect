@@ -8,12 +8,12 @@
 
 	<ItemGroup>
 		<PackageReference Include="Microsoft.EntityFrameworkCore" Version="8.0.0" />
-		<PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="8.0.0" />
+    	<PackageReference Include="Pomelo.EntityFrameworkCore.MySql" Version="8.0.0-beta.2" />
 	</ItemGroup>
 
 	<ItemGroup>
-        <ProjectReference Include="$(SolutionDir)\Shared\Shared.csproj" />
-		<ProjectReference Include="$(SolutionDir)\Server\Server.csproj" />
+        <ProjectReference Include="..\Shared\Shared.csproj" />
+		<ProjectReference Include="..\Server\Server.csproj" />
 	</ItemGroup>
 
 	<ItemGroup>
@@ -48,6 +48,14 @@
 		<None Include="Views\Users\Details.cshtml" />
 		<None Include="Views\Users\Edit.cshtml" />
 		<None Include="Views\Users\Index.cshtml" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <_ContentIncludedByDefault Remove="Views\Proffesions\Create.cshtml" />
+	  <_ContentIncludedByDefault Remove="Views\Proffesions\Delete.cshtml" />
+	  <_ContentIncludedByDefault Remove="Views\Proffesions\Details.cshtml" />
+	  <_ContentIncludedByDefault Remove="Views\Proffesions\Edit.cshtml" />
+	  <_ContentIncludedByDefault Remove="Views\Proffesions\Index.cshtml" />
 	</ItemGroup>
 
 </Project>

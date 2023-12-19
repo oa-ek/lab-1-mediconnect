@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using Server.Data;
@@ -19,14 +15,12 @@ namespace Client.Controllers
             _context = context;
         }
 
-        // GET: Diagnoses
         public async Task<IActionResult> Index()
         {
             var context = _context.Diagnoses.Include(d => d.Appointment).Include(d => d.Result);
             return View(await context.ToListAsync());
         }
 
-        // GET: Diagnoses/Details/5
         public async Task<IActionResult> Details(string? description)
         {
             if (description == null)
@@ -46,33 +40,28 @@ namespace Client.Controllers
             return View(diagnosis);
         }
 
-        // GET: Diagnoses/Create
-        public IActionResult Create()
+        public IActionResult Create(int id)
         {
-            ViewData["AppointmentID"] = new SelectList(_context.Appointments, "ID", "ID");
-            ViewData["ResultID"] = new SelectList(_context.Results, "ID", "ID");
+            ViewData["AppointmentId"] = id;
+            ViewData["ResultId"] = new SelectList(_context.Results, "Id", "Name");
             return View();
         }
 
-        // POST: Diagnoses/Create
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("ID,ResultID,Description,Date,AppointmentID")] Diagnosis diagnosis)
+        public async Task<IActionResult> Create(
+            [Bind("ResultId,Description,Date,AppointmentId")]
+            Diagnosis diagnosis)
         {
-            if (ModelState.IsValid)
-            {
-                _context.Add(diagnosis);
-                await _context.SaveChangesAsync();
-                return RedirectToAction(nameof(Index));
-            }
-            ViewData["AppointmentID"] = new SelectList(_context.Appointments, "ID", "ID", diagnosis.AppointmentID);
-            ViewData["ResultID"] = new SelectList(_context.Results, "ID", "ID", diagnosis.ResultID);
-            return View(diagnosis);
+            diagnosis.Date = DateTime.Now;
+            await _context.AddAsync(diagnosis);
+            await _context.SaveChangesAsync();
+            if (diagnosis.AppointmentId > 0)
+                return Redirect($"/Appointments/Details/{diagnosis.AppointmentId}");
+
+            return RedirectToAction(nameof(Index));
         }
 
-        // GET: Diagnoses/Edit/5
         public async Task<IActionResult> Edit(int? id)
         {
             if (id == null)
@@ -85,19 +74,19 @@ namespace Client.Controllers
             {
                 return NotFound();
             }
-            ViewData["AppointmentID"] = new SelectList(_context.Appointments, "ID", "ID", diagnosis.AppointmentID);
-            ViewData["ResultID"] = new SelectList(_context.Results, "ID", "ID", diagnosis.ResultID);
+
+            ViewData["AppointmentId"] = new SelectList(_context.Appointments, "Id", "Id", diagnosis.AppointmentId);
+            ViewData["ResultId"] = new SelectList(_context.Results, "Id", "Id", diagnosis.ResultId);
             return View(diagnosis);
         }
 
-        // POST: Diagnoses/Edit/5
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("ID,ResultID,Description,Date,AppointmentID")] Diagnosis diagnosis)
+        public async Task<IActionResult> Edit(int id,
+            [Bind("Id,ResultId,Description,Date,AppointmentId")]
+            Diagnosis diagnosis)
         {
-            if (id != diagnosis.ID)
+            if (id != diagnosis.Id)
             {
                 return NotFound();
             }
@@ -111,7 +100,7 @@ namespace Client.Controllers
                 }
                 catch (DbUpdateConcurrencyException)
                 {
-                    if (!DiagnosisExists(diagnosis.ID))
+                    if (!DiagnosisExists(diagnosis.Id))
                     {
                         return NotFound();
                     }
@@ -120,17 +109,18 @@ namespace Client.Controllers
                         throw;
                     }
                 }
+
                 return RedirectToAction(nameof(Index));
             }
-            ViewData["AppointmentID"] = new SelectList(_context.Appointments, "ID", "ID", diagnosis.AppointmentID);
-            ViewData["ResultID"] = new SelectList(_context.Results, "ID", "ID", diagnosis.ResultID);
+
+            ViewData["AppointmentId"] = new SelectList(_context.Appointments, "Id", "Id", diagnosis.AppointmentId);
+            ViewData["ResultId"] = new SelectList(_context.Results, "Id", "Id", diagnosis.ResultId);
             return View(diagnosis);
         }
 
-        // GET: Diagnoses/Delete/5
-        public async Task<IActionResult> Delete(string? description)
+        public async Task<IActionResult> Delete(int? id)
         {
-            if (description == null)
+            if (id == null)
             {
                 return NotFound();
             }
@@ -138,7 +128,8 @@ namespace Client.Controllers
             var diagnosis = await _context.Diagnoses
                 .Include(d => d.Appointment)
                 .Include(d => d.Result)
-                .FirstOrDefaultAsync(m => m.Description == description);
+                .FirstOrDefaultAsync(m => m.Id == id);
+
             if (diagnosis == null)
             {
                 return NotFound();
@@ -147,20 +138,22 @@ namespace Client.Controllers
             return View(diagnosis);
         }
 
-        // POST: Diagnoses/Delete/5
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> DeleteConfirmed(string description)
+        public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            var diagnosis = await _context.Diagnoses.FindAsync(description);
+            var diagnosis = await _context.Diagnoses.FindAsync(id);
+            if (diagnosis is null) return NotFound();
+
             _context.Diagnoses.Remove(diagnosis);
             await _context.SaveChangesAsync();
-            return RedirectToAction(nameof(Index));
+
+            return Redirect($"/Appointments/Details/{diagnosis.AppointmentId}");
         }
 
         private bool DiagnosisExists(int id)
         {
-            return _context.Diagnoses.Any(e => e.ID == id);
+            return _context.Diagnoses.Any(e => e.Id == id);
         }
     }
 }

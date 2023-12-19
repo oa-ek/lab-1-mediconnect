@@ -1,11 +1,8 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-
-namespace Shared.Models
+﻿namespace Shared.Models
 {
     public class Result
     {
-        public int ID { get; set; }
+        public int Id { get; set; }
         public string Name { get; set; }
         public ICollection<Appointment> Appointmens { get; set; }
     }

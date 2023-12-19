@@ -5,19 +5,14 @@ using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
-using System.Collections.Generic;
 using System.Security.Claims;
-using System.Threading.Tasks;
 
 namespace Server.Controllers
 {
-    public class AccountController : Controller
+    public class AccountController(Context context) : Controller
     {
-        private Context db;
-        public AccountController(Context context)
-        {
-            db = context;
-        }
+        private Context _db = context;
+
         [HttpGet]
         public IActionResult Login()
         {
@@ -29,7 +24,7 @@ namespace Server.Controllers
         {
             if (ModelState.IsValid)
             {
-                User user = await db.Users.Include(u => u.Role).FirstOrDefaultAsync(u => u.Login == model.Login && u.Password == model.Password);
+                var user = await _db.Users.Include(u => u.Role).FirstOrDefaultAsync(u => u.Login == model.Login && u.Password == model.Password);
                 if (user != null)
                 {
                     await Authenticate(user);
@@ -43,9 +38,9 @@ namespace Server.Controllers
         [HttpGet]
         public IActionResult Register()
         {
-            ViewBag.Genders = new SelectList(db.Genders, "ID", "Name");
-            ViewBag.Roles = new SelectList(db.Roles, "ID", "Name");
-            ViewBag.Professions = new SelectList(db.Proffesions, "ID", "Name");
+            ViewBag.Genders = new SelectList(_db.Genders, "Id", "Name");
+            ViewBag.Roles = new SelectList(_db.Roles, "Id", "Name");
+            // ViewBag.Professions = new SelectList(_db.Proffesions, "ID", "Name");
             return View();
         }
 
@@ -53,47 +48,42 @@ namespace Server.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Register(RegisterModel model)
         {
-            if (ModelState.IsValid)
+            if (!ModelState.IsValid) return View(model);
+            var user = await _db.Users.FirstOrDefaultAsync(u => u.Login == model.Login);
+            if (user == null)
             {
-                User user = await db.Users.FirstOrDefaultAsync(u => u.Login == model.Login);
-                if (user == null)
+                // var profession = await _db.Proffesions.FindAsync(model.ProfessionId);
+                // if (profession == null)
+                // {
+                //     ModelState.AddModelError("ProfessionID", "Вибрана професія не існує.");
+                //     // ViewBag.Professions = new SelectList(_db.Proffesions, "ID", "Name");
+                //     return View(model);
+                // }
+
+                var avatar = model.GenderId == 1 ? "/img/men_avatar.png" : "/img/women_avatar.png";
+                var registerUser = new User
                 {
-                    // Перевірка наявності професії
-                    Proffesion profession = await db.Proffesions.FindAsync(model.ProfessionID);
-                    if (profession == null)
-                    {
-                        ModelState.AddModelError("ProfessionID", "Вибрана професія не існує.");
-                        ViewBag.Professions = new SelectList(db.Proffesions, "ID", "Name");
-                        return View(model);
-                    }
+                    FirstName = model.FirstName,
+                    SecondName = model.SecondName,
+                    LastName = model.LastName,
+                    Phone = model.Phone,
+                    Avatar = avatar,
+                    Login = model.Login,
+                    Password = model.Password,
+                    GenderId = model.GenderId,
+                    RoleId = 2,
+                    BirthDate = model.BirthDate,
+                    ProffesionId = model.ProfessionId
+                };
 
-                    //TODO ADD DEFAULT VALUE FOR ROLE ID CLIENT --- NOTE REGISTER ONLY FOR CLIENTS...
-
-                    string avatar = model.GenderID == 1 ? "/img/men_avatar.png" : "/img/women_avatar.png";
-                    User registerUser = new User
-                    {
-                        FirstName = model.FirstName,
-                        SecondName = model.SecondName,
-                        LastName = model.LastName,
-                        Phone = model.Phone,
-                        Avatar = avatar,
-                        Login = model.Login,
-                        Password = model.Password,
-                        GenderID = model.GenderID,
-                        RoleID = 82,
-                        BitrhDate = model.BirthDate,
-                        ProffesionID = model.ProfessionID
-                    };
-
-                    db.Users.Add(registerUser);
-                    await db.SaveChangesAsync();
-                    return RedirectToAction("Login", "Account");
-                }
-                else
-                    ModelState.AddModelError("", "Некорректные логин и(или) Password");
+                _db.Users.Add(registerUser);
+                await _db.SaveChangesAsync();
+                return RedirectToAction("Login", "Account");
             }
+            else
+                ModelState.AddModelError("", "Некорректные логин и(или) Password");
 
-            ViewBag.Professions = new SelectList(db.Proffesions, "ID", "Name");
+            // ViewBag.Professions = new SelectList(_db.Proffesions, "ID", "Name");
             return View(model);
         }
 
@@ -101,10 +91,10 @@ namespace Server.Controllers
         {
             var claims = new List<Claim>
             {
-                new Claim(ClaimsIdentity.DefaultNameClaimType, user.Login),
-                new Claim(ClaimsIdentity.DefaultRoleClaimType, user.Role?.Name)
+                new(ClaimsIdentity.DefaultNameClaimType, user.Login),
+                new(ClaimsIdentity.DefaultRoleClaimType, user.Role?.Name)
             };
-            ClaimsIdentity id = new ClaimsIdentity(claims, "ApplicationCookie", ClaimsIdentity.DefaultNameClaimType, ClaimsIdentity.DefaultRoleClaimType);
+            var id = new ClaimsIdentity(claims, "ApplicationCookie", ClaimsIdentity.DefaultNameClaimType, ClaimsIdentity.DefaultRoleClaimType);
             await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, new ClaimsPrincipal(id));
         }
 

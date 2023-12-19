@@ -1,14 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-
-namespace Shared.Models
+﻿namespace Shared.Models
 {
     public class Appointment
     {
-        public int ID { get; set; } 
-        public int ClientID { get; set; }
+        public int Id { get; set; } 
+        public int ClientId { get; set; }
         public User Client { get; set; }
-        public int DoctorID { get; set; }
+        public int DoctorId { get; set; }
         public User Doctor { get; set; }
         public DateTime StartDate { get; set; }
         public DateTime EndDate { get; set; }

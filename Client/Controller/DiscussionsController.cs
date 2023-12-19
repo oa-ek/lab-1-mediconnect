@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using Client.Services.EmailSender;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
@@ -13,20 +10,35 @@ namespace Client.Controllers
     public class DiscussionsController : Controller
     {
         private readonly Context _context;
+        private readonly IEmailSender _emailSender;
 
-        public DiscussionsController(Context context)
+        public DiscussionsController(Context context, IEmailSender emailSender)
         {
             _context = context;
+            _emailSender = emailSender;
         }
 
-        // GET: Discussions
         public async Task<IActionResult> Index()
         {
             var context = _context.Discussions.Include(d => d.Appointment).Include(d => d.Doctor);
             return View(await context.ToListAsync());
         }
 
-        // GET: Discussions/Details/5
+        public async Task<IActionResult> MessageSend(int appointmentId, string message)
+        {
+            var appointment = await _context.Appointments.Include(x => x.Doctor).Include(x => x.Client)
+                .FirstOrDefaultAsync(x => x.Id == appointmentId);
+
+            if (appointment!.Client.Email is not null)
+            {
+                await _emailSender.SendEmailAsync(appointment.Client.Email,
+                    $"Appointment at Doctor {appointment.Doctor.FullName}", message);
+                return Redirect($"/Appointments/Details/{appointment.Id}");
+            }
+
+            return BadRequest("Couldn't send email. User probably doesn't have one");
+        }
+
         public async Task<IActionResult> Details(string? message)
         {
             if (message == null)
@@ -46,21 +58,18 @@ namespace Client.Controllers
             return View(discussion);
         }
 
-        // GET: Discussions/Create
         public IActionResult Create()
         {
-            ViewData["AppointmentID"] = new SelectList(_context.Appointments, "ID", "ID");
-            ViewData["DoctorID"] = new SelectList(_context.Users, "ID", "ID");
-            ViewData["ProffesionID"] = new SelectList(_context.Proffesions, "ID", "ID");
+            ViewData["AppointmentId"] = new SelectList(_context.Appointments, "Id", "Id");
+            ViewData["DoctorId"] = new SelectList(_context.Users, "Id", "Id");
             return View();
         }
 
-        // POST: Discussions/Create
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("ID,AppointmentID,DoctorID,Rate,MessageDate,Message")] Discussion discussion)
+        public async Task<IActionResult> Create(
+            [Bind("Id,AppointmentId,DoctorId,Rate,MessageDate,Message")]
+            Discussion discussion)
         {
             if (ModelState.IsValid)
             {
@@ -68,12 +77,12 @@ namespace Client.Controllers
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
             }
-            ViewData["AppointmentID"] = new SelectList(_context.Appointments, "ID", "ID", discussion.AppointmentID);
-            ViewData["DoctorID"] = new SelectList(_context.Users, "ID", "ID", discussion.DoctorID);
+
+            ViewData["AppointmentId"] = new SelectList(_context.Appointments, "Id", "Id", discussion.AppointmentId);
+            ViewData["DoctorId"] = new SelectList(_context.Users, "Id", "Id", discussion.DoctorId);
             return View(discussion);
         }
 
-        // GET: Discussions/Edit/5
         public async Task<IActionResult> Edit(int? id)
         {
             if (id == null)
@@ -86,19 +95,19 @@ namespace Client.Controllers
             {
                 return NotFound();
             }
-            ViewData["AppointmentID"] = new SelectList(_context.Appointments, "ID", "ID", discussion.AppointmentID);
-            ViewData["DoctorID"] = new SelectList(_context.Users, "ID", "ID", discussion.DoctorID);
+
+            ViewData["AppointmentId"] = new SelectList(_context.Appointments, "Id", "Id", discussion.AppointmentId);
+            ViewData["DoctorId"] = new SelectList(_context.Users, "Id", "Id", discussion.DoctorId);
             return View(discussion);
         }
 
-        // POST: Discussions/Edit/5
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("ID,AppointmentID,DoctorID,Rate,MessageDate,Message")] Discussion discussion)
+        public async Task<IActionResult> Edit(int id,
+            [Bind("Id,AppointmentId,DoctorId,Rate,MessageDate,Message")]
+            Discussion discussion)
         {
-            if (id != discussion.ID)
+            if (id != discussion.Id)
             {
                 return NotFound();
             }
@@ -112,7 +121,7 @@ namespace Client.Controllers
                 }
                 catch (DbUpdateConcurrencyException)
                 {
-                    if (!DiscussionExists(discussion.ID))
+                    if (!DiscussionExists(discussion.Id))
                     {
                         return NotFound();
                     }
@@ -121,14 +130,15 @@ namespace Client.Controllers
                         throw;
                     }
                 }
+
                 return RedirectToAction(nameof(Index));
             }
-            ViewData["AppointmentID"] = new SelectList(_context.Appointments, "ID", "ID", discussion.AppointmentID);
-            ViewData["DoctorID"] = new SelectList(_context.Users, "ID", "ID", discussion.DoctorID);
+
+            ViewData["AppointmentId"] = new SelectList(_context.Appointments, "Id", "Id", discussion.AppointmentId);
+            ViewData["DoctorId"] = new SelectList(_context.Users, "Id", "Id", discussion.DoctorId);
             return View(discussion);
         }
 
-        // GET: Discussions/Delete/5
         public async Task<IActionResult> Delete(string? message)
         {
             if (message == null)
@@ -148,7 +158,6 @@ namespace Client.Controllers
             return View(discussion);
         }
 
-        // POST: Discussions/Delete/5
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(string message)
@@ -161,7 +170,7 @@ namespace Client.Controllers
 
         private bool DiscussionExists(int id)
         {
-            return _context.Discussions.Any(e => e.ID == id);
+            return _context.Discussions.Any(e => e.Id == id);
         }
     }
 }

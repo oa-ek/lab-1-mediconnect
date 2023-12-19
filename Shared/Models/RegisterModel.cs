@@ -1,5 +1,4 @@
-﻿using System;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 
 namespace Shared.Models
 {
@@ -29,12 +28,12 @@ namespace Shared.Models
         public string ConfirmPassword { get; set; }
 
         [Required(ErrorMessage = "Не вибрана Gender")]
-        public int GenderID { get; set; }
+        public int GenderId { get; set; }
 
         [Required(ErrorMessage = "Не вибрана Birth Date")]
         public DateTime BirthDate { get; set; }
 
         [Required(ErrorMessage = "Не вибрана Profession")]
-        public int ProfessionID { get; set; }  // Додано поле для ідентифікатора професії
+        public int ProfessionId { get; set; }
     }
 }

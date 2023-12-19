@@ -1,14 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-
-namespace Shared.Models
+﻿namespace Shared.Models
 {
     public class Discussion
     {
-        public int ID { get; set; } 
-        public int AppointmentID { get; set; }
+        public int Id { get; set; } 
+        public int AppointmentId { get; set; }
         public Appointment Appointment{ get; set; }
-        public int DoctorID { get; set; }
+        public int DoctorId { get; set; }
         public User Doctor { get; set; }
         public int Rate { get; set; }
         public DateTime MessageDate { get; set; }

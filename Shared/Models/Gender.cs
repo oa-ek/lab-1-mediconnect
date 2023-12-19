@@ -1,10 +1,8 @@
-﻿using System.Collections.Generic;
-
-namespace Shared.Models
+﻿namespace Shared.Models
 {
     public class Gender
     {
-        public int ID { get; set; }
+        public int Id { get; set; }
         public string Name { get; set; }
         public ICollection<User> Users { get; set; }
     }

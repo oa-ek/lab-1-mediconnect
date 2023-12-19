@@ -1,46 +1,77 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using System.Globalization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using Server.Data;
 using Shared.Models;
 
-namespace Client.Controllers
+namespace MediConnect.Controllers
 {
     public class UsersController : Controller
     {
         private readonly Context _context;
-        private readonly FileManager _fileManager;
 
-        public UsersController(Context context, FileManager fileManager)
+        public UsersController(Context context)
         {
             _context = context;
-            _fileManager = fileManager;
         }
 
-        // GET: Users
         public async Task<IActionResult> Index()
         {
-            var context = _context.Users.Include(u => u.Gender).Include(u => u.Role).Include(u => u.Proffesion);
-            return View(await context.ToListAsync());
+            var clinicContext = _context.Users.Include(u => u.Gender).Include(u => u.Role);
+            return View(await clinicContext.ToListAsync());
         }
 
-        // GET: Users/Details/5
-        public async Task<IActionResult> Details(string? name)
+        public async Task<IActionResult> Clients()
         {
-            if (name == null)
+            var clinicContext = _context.Users.Include(u => u.Gender).Include(u => u.Role)
+                .Where(x => x.Role.Name.Equals("Patient"));
+            return View("Index", await clinicContext.ToListAsync());
+        }
+
+        public async Task<IActionResult> MyClients()
+        {
+            var currentUser = _context.Users.First(x => x.Login.Equals(HttpContext.User.Identity.Name));
+            var clientsIds = _context.Appointments.Where(x => x.DoctorId == currentUser.Id).Select(x => x.ClientId)
+                .Distinct();
+            var clinicContext = _context.Users.Include(u => u.Gender).Include(u => u.Role)
+                .Where(x => x.Role.Name.Equals("Patient") && clientsIds.Contains(x.Id));
+            return View("Index", await clinicContext.ToListAsync());
+        }
+
+        public async Task<IActionResult> Doctors()
+        {
+            var clinicContext = _context.Users.Include(u => u.Gender).Include(u => u.Role)
+                .Where(x => !x.Role.Name.Equals("Patient"));
+            return View("Index", await clinicContext.ToListAsync());
+        }
+
+        public async Task<IActionResult> Details(int? id)
+        {
+            var dateTime = DateTime.ParseExact("01.01.0001 00:00:00", "dd.MM.yyyy HH:mm:ss", CultureInfo.InvariantCulture);
+            ViewBag.End = dateTime;
+
+            if (id == null)
             {
-                return NotFound();
+                ViewBag.My = true;
+                var currentUser = _context.Users.Include(x => x.Role).Include(x => x.Gender).Include(x => x.Reviews)
+                    .First(x => x.Login.Equals(HttpContext.User.Identity.Name));
+                ViewBag.Appointments = _context.Appointments.Include(x => x.Doctor).Include(x => x.Client)
+                    .Where(x => x.ClientId == currentUser.Id || x.DoctorId == currentUser.Id);
+                ViewBag.Reviews = _context.Reviews.Include(x => x.Doctor).Include(x => x.Client)
+                    .Where(x => x.DoctorId == currentUser.Id);
+                return View(currentUser);
             }
 
+            ViewBag.Appointments = _context.Appointments.Include(x => x.Doctor).Include(x => x.Client)
+                .Where(x => x.ClientId == id || x.DoctorId == id);
+            ViewBag.Reviews = _context.Reviews.Include(x => x.Doctor).Include(x => x.Client)
+                .Where(x => x.DoctorId == id);
+            ViewBag.My = false;
             var user = await _context.Users
                 .Include(u => u.Gender)
                 .Include(u => u.Role)
-                .Include(u => u.Proffesion)
-                .FirstOrDefaultAsync(m => m.FirstName == name);
+                .FirstOrDefaultAsync(m => m.Id == id);
             if (user == null)
             {
                 return NotFound();
@@ -49,42 +80,38 @@ namespace Client.Controllers
             return View(user);
         }
 
-        // GET: Users/Create
         public IActionResult Create()
         {
-            ViewData["GenderID"] = new SelectList(_context.Genders, "ID", "ID");
-            ViewData["RoleID"] = new SelectList(_context.Roles, "ID", "ID");
-            ViewData["ProffesionID"] = new SelectList(_context.Proffesions, "ID", "ID");
+            ViewData["GenderId"] = new SelectList(_context.Genders, "Id", "Name");
+            ViewData["RoleId"] = new SelectList(_context.Roles.Where(x => x.Id != 82), "Id", "Name");
             return View();
         }
 
-        // POST: Users/Create
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("ID,AvatarFile,Login,Password,FirstName,SecondName,LastName,BirthDate,Phone,GenderID,RoleID,ProffesionID")] User user)
+        public async Task<IActionResult> Create(
+            [Bind("Id,Avatar,Login,Password,FirstName,SecondName,LastName,BirthDate,Phone,GenderId,RoleId")]
+            User user)
         {
-            if (ModelState.IsValid)
-            {
-                // Обробка завантаження файлу
-                if (user.AvatarFile != null)
-                {
-                    user.Avatar = await _fileManager.SaveUserPhotoAsync(user.AvatarFile);
-                }
+            var avatar = user.GenderId == 1 ? "/img/men_avatar.png" : "/img/women_avatar.png";
+            user.Avatar = avatar;
+            user.Role = (await _context.Roles.FindAsync(user.RoleId))!;
 
-                _context.Add(user);
-                await _context.SaveChangesAsync();
-                return RedirectToAction(nameof(Index));
+            await _context.AddAsync(user);
+            var result = await _context.SaveChangesAsync() > 0;
+
+            if (result)
+            {
+                if (_context.Roles.First(x => x.Id == user.RoleId).Name.Equals("Patient"))
+                    return Redirect("Clients/");
+                return Redirect("Doctors/");
             }
 
-            ViewData["GenderID"] = new SelectList(_context.Genders, "ID", "ID", user.GenderID);
-            ViewData["RoleID"] = new SelectList(_context.Roles, "ID", "ID", user.RoleID);
-            ViewData["ProffesionID"] = new SelectList(_context.Proffesions, "ID", "ID", user.ProffesionID);
+            ViewData["GenderId"] = new SelectList(_context.Genders, "Id", "Id", user.GenderId);
+            ViewData["RoleId"] = new SelectList(_context.Roles, "Id", "Id", user.RoleId);
             return View(user);
         }
 
-        // GET: Users/Edit/5
         public async Task<IActionResult> Edit(int? id)
         {
             if (id == null)
@@ -97,51 +124,34 @@ namespace Client.Controllers
             {
                 return NotFound();
             }
-            ViewData["GenderID"] = new SelectList(_context.Genders, "ID", "ID", user.GenderID);
-            ViewData["RoleID"] = new SelectList(_context.Roles, "ID", "ID", user.RoleID);
-            ViewData["ProffesionID"] = new SelectList(_context.Proffesions, "ID", "ID", user.ProffesionID);
+
+            ViewData["GenderId"] = new SelectList(_context.Genders, "Id", "Name", user.GenderId);
+            ViewData["RoleId"] = new SelectList(_context.Roles, "Id", "Name", user.RoleId);
             return View(user);
         }
 
-        // POST: Users/Edit/5
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("ID,Avatar,Login,Password,FirstName,SecondName,LastName,BitrhDate,Phone,GenderID,RoleID,ProffesionID")] User user)
+        public async Task<IActionResult> Edit(int id,
+            [Bind("Id,Avatar,Login,Password,FirstName,SecondName,LastName,BirthDate,Phone,GenderId,RoleId")]
+            User user)
         {
-            if (id != user.ID)
+            if (id != user.Id)
             {
                 return NotFound();
             }
 
-            if (ModelState.IsValid)
-            {
-                try
-                {
-                    _context.Update(user);
-                    await _context.SaveChangesAsync();
-                }
-                catch (DbUpdateConcurrencyException)
-                {
-                    if (!UserExists(user.ID))
-                    {
-                        return NotFound();
-                    }
-                    else
-                    {
-                        throw;
-                    }
-                }
+            _context.Update(user);
+            var result = await _context.SaveChangesAsync() > 0;
+
+            if (result)
                 return RedirectToAction(nameof(Index));
-            }
-            ViewData["GenderID"] = new SelectList(_context.Genders, "ID", "ID", user.GenderID);
-            ViewData["RoleID"] = new SelectList(_context.Roles, "ID", "ID", user.RoleID);
-            ViewData["ProffesionID"] = new SelectList(_context.Proffesions, "ID", "ID", user.ProffesionID);
+
+            ViewData["GenderId"] = new SelectList(_context.Genders, "Id", "Name", user.GenderId);
+            ViewData["RoleId"] = new SelectList(_context.Roles, "Id", "Name", user.RoleId);
             return View(user);
         }
 
-        // GET: Users/Delete/5
         public async Task<IActionResult> Delete(int? id)
         {
             if (id == null)
@@ -152,8 +162,7 @@ namespace Client.Controllers
             var user = await _context.Users
                 .Include(u => u.Gender)
                 .Include(u => u.Role)
-                .Include(u => u.Proffesion)
-                .FirstOrDefaultAsync(m => m.ID == id);
+                .FirstOrDefaultAsync(m => m.Id == id);
             if (user == null)
             {
                 return NotFound();
@@ -162,8 +171,7 @@ namespace Client.Controllers
             return View(user);
         }
 
-        // POST: Users/Delete/5
-        [HttpPost, ActionName("Delete")]
+        [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
@@ -175,7 +183,7 @@ namespace Client.Controllers
 
         private bool UserExists(int id)
         {
-            return _context.Users.Any(e => e.ID == id);
+            return _context.Users.Any(e => e.Id == id);
         }
     }
 }

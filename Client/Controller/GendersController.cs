@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Rendering;
+﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Server.Data;
 using Shared.Models;
@@ -19,13 +14,11 @@ namespace Client.Controllers
             _context = context;
         }
 
-        // GET: Genders
         public async Task<IActionResult> Index()
         {
             return View(await _context.Genders.ToListAsync());
         }
 
-        // GET: Genders/Details/5
         public async Task<IActionResult> Details(string? name)
         {
             if (name == null)
@@ -43,15 +36,11 @@ namespace Client.Controllers
             return View(gender);
         }
 
-        // GET: Genders/Create
         public IActionResult Create()
         {
             return View();
         }
 
-        // POST: Genders/Create
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create([Bind("ID,Name")] Gender gender)
@@ -65,7 +54,6 @@ namespace Client.Controllers
             return View(gender);
         }
 
-        // GET: Genders/Edit/5
         public async Task<IActionResult> Edit(int? id)
         {
             if (id == null)
@@ -81,14 +69,11 @@ namespace Client.Controllers
             return View(gender);
         }
 
-        // POST: Genders/Edit/5
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(int id, [Bind("ID,Name")] Gender gender)
         {
-            if (id != gender.ID)
+            if (id != gender.Id)
             {
                 return NotFound();
             }
@@ -102,7 +87,7 @@ namespace Client.Controllers
                 }
                 catch (DbUpdateConcurrencyException)
                 {
-                    if (!GenderExists(gender.ID))
+                    if (!GenderExists(gender.Id))
                     {
                         return NotFound();
                     }
@@ -116,7 +101,6 @@ namespace Client.Controllers
             return View(gender);
         }
 
-        // GET: Genders/Delete/5
         public async Task<IActionResult> Delete(string? name)
         {
             if (name == null)
@@ -134,7 +118,6 @@ namespace Client.Controllers
             return View(gender);
         }
 
-        // POST: Genders/Delete/5
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(string name)
@@ -147,7 +130,7 @@ namespace Client.Controllers
 
         private bool GenderExists(int id)
         {
-            return _context.Genders.Any(e => e.ID == id);
+            return _context.Genders.Any(e => e.Id == id);
         }
     }
 }

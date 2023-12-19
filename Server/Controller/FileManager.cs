@@ -1,10 +1,4 @@
-﻿using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Http;
-using System;
-using System.IO;
-using System.Threading.Tasks;
-
-public class FileManager
+﻿public class FileManager
 {
     private readonly IWebHostEnvironment _environment;
 

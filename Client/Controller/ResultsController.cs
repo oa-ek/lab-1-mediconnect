@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Rendering;
+﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Server.Data;
 using Shared.Models;
@@ -19,13 +14,11 @@ namespace Client.Controllers
             _context = context;
         }
 
-        // GET: Results
         public async Task<IActionResult> Index()
         {
             return View(await _context.Results.ToListAsync());
         }
 
-        // GET: Results/Details/5
         public async Task<IActionResult> Details(string? name)
         {
             if (name == null)
@@ -43,15 +36,11 @@ namespace Client.Controllers
             return View(result);
         }
 
-        // GET: Results/Create
         public IActionResult Create()
         {
             return View();
         }
 
-        // POST: Results/Create
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create([Bind("ID,Name")] Result result)
@@ -65,7 +54,6 @@ namespace Client.Controllers
             return View(result);
         }
 
-        // GET: Results/Edit/5
         public async Task<IActionResult> Edit(int? id)
         {
             if (id == null)
@@ -81,14 +69,11 @@ namespace Client.Controllers
             return View(result);
         }
 
-        // POST: Results/Edit/5
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(int id, [Bind("ID,Name")] Result result)
         {
-            if (id != result.ID)
+            if (id != result.Id)
             {
                 return NotFound();
             }
@@ -102,7 +87,7 @@ namespace Client.Controllers
                 }
                 catch (DbUpdateConcurrencyException)
                 {
-                    if (!ResultExists(result.ID))
+                    if (!ResultExists(result.Id))
                     {
                         return NotFound();
                     }
@@ -116,7 +101,6 @@ namespace Client.Controllers
             return View(result);
         }
 
-        // GET: Results/Delete/5
         public async Task<IActionResult> Delete(string? name)
         {
             if (name == null)
@@ -134,7 +118,6 @@ namespace Client.Controllers
             return View(result);
         }
 
-        // POST: Results/Delete/5
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(string name)
@@ -147,7 +130,7 @@ namespace Client.Controllers
 
         private bool ResultExists(int id)
         {
-            return _context.Results.Any(e => e.ID == id);
+            return _context.Results.Any(e => e.Id == id);
         }
     }
 }
