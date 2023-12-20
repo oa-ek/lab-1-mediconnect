@@ -1,0 +1,61 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+
+	<ItemGroup>
+		<PackageReference Include="Microsoft.EntityFrameworkCore" Version="8.0.0" />
+    	<PackageReference Include="Pomelo.EntityFrameworkCore.MySql" Version="8.0.0-beta.2" />
+	</ItemGroup>
+
+	<ItemGroup>
+        <ProjectReference Include="..\Shared\Shared.csproj" />
+		<ProjectReference Include="..\Server\Server.csproj" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<None Update="CustomTemplates\**\*">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</None>
+	</ItemGroup>
+
+	<ItemGroup>
+		<None Include="Views\Appointments\Create.cshtml" />
+		<None Include="Views\Appointments\Delete.cshtml" />
+		<None Include="Views\Appointments\Details.cshtml" />
+		<None Include="Views\Appointments\Edit.cshtml" />
+		<None Include="Views\Appointments\Index.cshtml" />
+		<None Include="Views\Diagnoses\Create.cshtml" />
+		<None Include="Views\Diagnoses\Delete.cshtml" />
+		<None Include="Views\Diagnoses\Details.cshtml" />
+		<None Include="Views\Diagnoses\Edit.cshtml" />
+		<None Include="Views\Diagnoses\Index.cshtml" />
+		<None Include="Views\Home\Index.cshtml" />
+		<None Include="Views\Home\Privacy.cshtml" />
+		<None Include="Views\Roles\Create.cshtml" />
+		<None Include="Views\Roles\Delete.cshtml" />
+		<None Include="Views\Roles\Details.cshtml" />
+		<None Include="Views\Roles\Edit.cshtml" />
+		<None Include="Views\Roles\Index.cshtml" />
+		<None Include="Views\Shared\Error.cshtml" />
+		<None Include="Views\Shared\_Layout.cshtml" />
+		<None Include="Views\Shared\_ValidationScriptsPartial.cshtml" />
+		<None Include="Views\Users\Create.cshtml" />
+		<None Include="Views\Users\Delete.cshtml" />
+		<None Include="Views\Users\Details.cshtml" />
+		<None Include="Views\Users\Edit.cshtml" />
+		<None Include="Views\Users\Index.cshtml" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <_ContentIncludedByDefault Remove="Views\Proffesions\Create.cshtml" />
+	  <_ContentIncludedByDefault Remove="Views\Proffesions\Delete.cshtml" />
+	  <_ContentIncludedByDefault Remove="Views\Proffesions\Details.cshtml" />
+	  <_ContentIncludedByDefault Remove="Views\Proffesions\Edit.cshtml" />
+	  <_ContentIncludedByDefault Remove="Views\Proffesions\Index.cshtml" />
+	</ItemGroup>
+
+</Project>
